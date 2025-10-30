@@ -12,5 +12,9 @@
     "dev:mcp": "cd packages/mcp-server && tsx src/server.ts",
     "build": "echo 'Use per-app build'",
     "lint": "eslint ."
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
   }
 }
