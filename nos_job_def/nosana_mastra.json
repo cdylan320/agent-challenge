@@ -1,0 +1,17 @@
+{
+  "image": "your-docker-username/nosana-agents-102:latest",
+  "name": "agents-102-fullstack",
+  "resources": {
+    "gpu": 1,
+    "cpu": 2,
+    "memory": 8
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "AGENT_PORT": "4111",
+    "MCP_PORT": "4122",
+    "UI_PORT": "3000"
+  },
+  "ports": [3000, 4111, 4122],
+  "timeout": 30
+}

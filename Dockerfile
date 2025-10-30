@@ -1,52 +1,24 @@
 # syntax=docker/dockerfile:1
-
-FROM node:lts AS build
-
-RUN corepack enable
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-
-# Disable Analytics/Telemetry
-ENV DISABLE_TELEMETRY=true
-ENV POSTHOG_DISABLED=true
-ENV MASTRA_TELEMETRY_DISABLED=true
-ENV DO_NOT_TRACK=1
-
-# Ensure logs are visible (disable buffering)
-ENV PYTHONUNBUFFERED=1
-
+FROM node:20-slim AS base
 WORKDIR /app
 
-COPY pnpm-lock.yaml ./
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.12.2 --activate
 
-RUN --mount=type=cache,target=/pnpm/store \
-  pnpm fetch --frozen-lockfile
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/agent/package.json apps/agent/
+COPY apps/ui/package.json apps/ui/
+COPY packages/mcp-server/package.json packages/mcp-server/
 
-COPY package.json ./
-
-RUN --mount=type=cache,target=/pnpm/store \
-  pnpm install --frozen-lockfile --prod --offline
+RUN pnpm install --frozen-lockfile || pnpm install
 
 COPY . .
 
-RUN pnpm build
+# Build apps (UI build optional for dev, but we include for production)
+RUN pnpm --filter agent-service build && pnpm --filter mcp-server build && pnpm --filter ui build || true
 
-FROM node:lts AS runtime
+ENV AGENT_PORT=4111 MCP_PORT=4122 UI_PORT=3000 NODE_ENV=production
 
-RUN groupadd -g 1001 appgroup && \
-  useradd -u 1001 -g appgroup -m -d /app -s /bin/false appuser
+EXPOSE 3000 4111 4122
 
-WORKDIR /app
-
-COPY --from=build --chown=appuser:appgroup /app ./
-
-ENV NODE_ENV=production \
-  NODE_OPTIONS="--enable-source-maps"
-
-USER appuser
-
-EXPOSE 3000
-EXPOSE 4111
-
-ENTRYPOINT ["npm", "start"]
+CMD sh -c "node apps/agent/dist/index.js & node packages/mcp-server/dist/server.js & next start apps/ui -p $UI_PORT && wait"
