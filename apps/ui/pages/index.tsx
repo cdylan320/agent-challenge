@@ -1,10 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [url, setUrl] = useState('https://example.com');
   const [text, setText] = useState('Paste text to summarize');
   const [result, setResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<string[]>([]);
+
+  useEffect(() => {
+    const es = new EventSource('/api/events');
+    es.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        setEvents((prev) => [
+          `${new Date(data.at || Date.now()).toLocaleTimeString()} ${data.type}${data.action ? `:${data.action}` : ''}`,
+          ...prev
+        ].slice(0, 50));
+      } catch {
+        setEvents((prev) => [ev.data, ...prev].slice(0, 50));
+      }
+    };
+    es.onerror = () => {
+      es.close();
+    };
+    return () => es.close();
+  }, []);
 
   async function callAgent(action: 'fetch_url' | 'summarize', input: any) {
     setLoading(true);
@@ -41,6 +61,14 @@ export default function Home() {
       <section style={{ marginTop: 24 }}>
         <h3>Result</h3>
         <pre style={{ background: '#111', color: '#0f0', padding: 12, whiteSpace: 'pre-wrap' }}>{result}</pre>
+      </section>
+      <section style={{ marginTop: 24 }}>
+        <h3>Live Events</h3>
+        <ul style={{ maxHeight: 200, overflow: 'auto', background: '#fafafa', padding: 8, border: '1px solid #ddd' }}>
+          {events.map((e, i) => (
+            <li key={i} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12 }}>{e}</li>
+          ))}
+        </ul>
       </section>
     </main>
   );

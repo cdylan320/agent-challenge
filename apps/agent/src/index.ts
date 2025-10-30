@@ -8,6 +8,18 @@ app.use(express.json());
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || '';
 const MODEL_NAME = process.env.MODEL_NAME_AT_ENDPOINT || 'Qwen2.5:7b';
 
+// Simple in-memory SSE clients list
+const sseClients = new Set<import('express').Response>();
+
+function sseSend(data: unknown) {
+	const payload = `data: ${JSON.stringify(data)}\n\n`;
+	for (const res of sseClients) {
+		try {
+			res.write(payload);
+		} catch {}
+	}
+}
+
 // Tool 1: fetch_url - fetch arbitrary public URL text
 const fetchUrlSchema = z.object({ url: z.string().url() });
 
@@ -49,20 +61,45 @@ async function toolSummarize(args: z.infer<typeof summarizeSchema>): Promise<str
 app.post('/agent/act', async (req, res) => {
 	try {
 		const { action, input } = req.body || {};
+		sseSend({ type: 'action_start', action, at: Date.now(), input });
 		if (action === 'fetch_url') {
 			const parsed = fetchUrlSchema.parse(input);
 			const out = await toolFetchUrl(parsed);
+			sseSend({ type: 'action_result', action, at: Date.now(), length: out.length });
 			return res.json({ ok: true, result: out });
 		}
 		if (action === 'summarize') {
 			const parsed = summarizeSchema.parse(input);
 			const out = await toolSummarize(parsed);
+			sseSend({ type: 'action_result', action, at: Date.now(), preview: String(out).slice(0, 160) });
 			return res.json({ ok: true, result: out });
 		}
 		return res.status(400).json({ ok: false, error: 'Unknown action' });
 	} catch (e: any) {
+		sseSend({ type: 'action_error', at: Date.now(), error: e?.message || 'Internal error' });
 		return res.status(500).json({ ok: false, error: e?.message || 'Internal error' });
 	}
+});
+
+// SSE endpoint for live synchronization
+app.get('/events', (req, res) => {
+	res.setHeader('Content-Type', 'text/event-stream');
+	res.setHeader('Cache-Control', 'no-cache');
+	res.setHeader('Connection', 'keep-alive');
+	res.flushHeaders?.();
+
+	// send hello + heartbeat
+	res.write(`data: ${JSON.stringify({ type: 'hello', at: Date.now() })}\n\n`);
+	const heartbeat = setInterval(() => {
+		try { res.write(`data: ${JSON.stringify({ type: 'heartbeat', at: Date.now() })}\n\n`); } catch {}
+	}, 15000);
+
+	sseClients.add(res);
+	req.on('close', () => {
+		clearInterval(heartbeat);
+		sseClients.delete(res);
+		try { res.end(); } catch {}
+	});
 });
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
