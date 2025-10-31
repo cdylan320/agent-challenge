@@ -1,11 +1,20 @@
-# Nosana Builders Challenge: Agents 102 – Full-Stack Agent App
+# Nosana Builders Challenge: Agents 102 – Full-Stack Agent App 🏆
 
-This repository contains a production-ready monorepo with:
+A production-ready, professional-grade AI agent application built for the Nosana Agents 102 Challenge. Features real-time synchronization, dual UI options, and complete Mastra framework integration.
 
-- Mastra agent with custom tools
-- MCP server exposing tools/resources
-- Next.js UI with live interaction + SSE live events
-- Docker + Nosana job definition
+## 🎯 Features
+
+- **Mastra AI Agent** (`webResearchAgent`) with 2+ custom tools:
+  - `fetchUrlTool` - Retrieve content from any public URL
+  - `summarizeTool` - AI-powered text summarization using Nosana LLM
+- **MCP Server** with tools and resource management:
+  - `add_note` / `summarize_note` tools
+  - Resource list/read for notes
+- **Interactive Frontend** (Two Options):
+  - **Custom UI** (`apps/ui`) - Modern interface with real-time SSE events
+  - **CopilotKit UI** (`src/app`) - Framework-integrated agent interface
+- **Live Synchronization** - Real-time event streaming via SSE
+- **Docker + Nosana** - Ready for deployment
 
 Quickstart
 
