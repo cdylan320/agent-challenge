@@ -23,7 +23,7 @@ export default function Home() {
 
     const connect = () => {
       es = new EventSource("/api/events");
-      
+
       es.onopen = () => {
         setConnected(true);
         console.log("SSE connected");
@@ -70,7 +70,9 @@ export default function Home() {
         setResult(`❌ Error: ${json.error}`);
       }
     } catch (e: any) {
-      setResult(`❌ Network Error: ${e?.message || "Failed to connect to agent"}`);
+      setResult(
+        `❌ Network Error: ${e?.message || "Failed to connect to agent"}`
+      );
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,8 @@ export default function Home() {
         maxWidth: 900,
         margin: "0 auto",
         padding: "24px",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
         background: "#f8f9fa",
         minHeight: "100vh",
       }}
@@ -124,7 +127,8 @@ export default function Home() {
           Agents 102 – Full-Stack Demo
         </h1>
         <p style={{ margin: "0 0 24px 0", color: "#666", fontSize: "14px" }}>
-          Interactive AI agent with real-time event streaming. Test URL fetching and text summarization.
+          Interactive AI agent with real-time event streaming. Test URL fetching
+          and text summarization.
         </p>
 
         {/* Status Indicator */}
@@ -142,12 +146,22 @@ export default function Home() {
             marginBottom: "24px",
           }}
         >
-          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: connected ? "#28a745" : "#dc3545" }} />
+          <span
+            style={{
+              display: "inline-block",
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: connected ? "#28a745" : "#dc3545",
+            }}
+          />
           {connected ? "Live Events Connected" : "Live Events Disconnected"}
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "1fr 1fr" }}>
+      <div
+        style={{ display: "grid", gap: "24px", gridTemplateColumns: "1fr 1fr" }}
+      >
         {/* Fetch URL Section */}
         <div
           style={{
@@ -158,11 +172,26 @@ export default function Home() {
           }}
         >
           <div style={{ marginBottom: "16px" }}>
-            <h2 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 600, color: "#1a1a1a" }}>
+            <h2
+              style={{
+                margin: "0 0 8px 0",
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#1a1a1a",
+              }}
+            >
               🌐 Fetch URL
             </h2>
-            <p style={{ margin: 0, color: "#666", fontSize: "13px", lineHeight: 1.5 }}>
-              Retrieve and display the raw HTML/text content from any publicly accessible URL.
+            <p
+              style={{
+                margin: 0,
+                color: "#666",
+                fontSize: "13px",
+                lineHeight: 1.5,
+              }}
+            >
+              Retrieve and display the raw HTML/text content from any publicly
+              accessible URL.
             </p>
           </div>
           <input
@@ -211,11 +240,26 @@ export default function Home() {
           }}
         >
           <div style={{ marginBottom: "16px" }}>
-            <h2 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 600, color: "#1a1a1a" }}>
+            <h2
+              style={{
+                margin: "0 0 8px 0",
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#1a1a1a",
+              }}
+            >
               📝 Summarize
             </h2>
-            <p style={{ margin: 0, color: "#666", fontSize: "13px", lineHeight: 1.5 }}>
-              Use AI to generate a concise summary of any text using the Nosana LLM endpoint.
+            <p
+              style={{
+                margin: 0,
+                color: "#666",
+                fontSize: "13px",
+                lineHeight: 1.5,
+              }}
+            >
+              Use AI to generate a concise summary of any text using the Nosana
+              LLM endpoint.
             </p>
           </div>
           <textarea
@@ -268,7 +312,14 @@ export default function Home() {
             marginTop: "24px",
           }}
         >
-          <h2 style={{ margin: "0 0 16px 0", fontSize: "20px", fontWeight: 600, color: "#1a1a1a" }}>
+          <h2
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: "20px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+            }}
+          >
             📊 Result
           </h2>
           <div
@@ -286,7 +337,11 @@ export default function Home() {
               lineHeight: 1.6,
             }}
           >
-            {result || <span style={{ color: "#888" }}>No result yet. Try fetching a URL or summarizing text.</span>}
+            {result || (
+              <span style={{ color: "#888" }}>
+                No result yet. Try fetching a URL or summarizing text.
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -301,8 +356,22 @@ export default function Home() {
           marginTop: "24px",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "#1a1a1a" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+            }}
+          >
             🔴 Live Events Stream
           </h2>
           <button
@@ -331,11 +400,22 @@ export default function Home() {
           }}
         >
           {events.length === 0 ? (
-            <div style={{ textAlign: "center", color: "#999", padding: "24px", fontSize: "13px" }}>
-              {connected ? "Waiting for events..." : "Connecting to event stream..."}
+            <div
+              style={{
+                textAlign: "center",
+                color: "#999",
+                padding: "24px",
+                fontSize: "13px",
+              }}
+            >
+              {connected
+                ? "Waiting for events..."
+                : "Connecting to event stream..."}
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
               {events.map((event, i) => (
                 <div
                   key={i}
@@ -350,26 +430,58 @@ export default function Home() {
                     gap: "10px",
                   }}
                 >
-                  <span style={{ fontSize: "16px" }}>{getEventIcon(event.type)}</span>
+                  <span style={{ fontSize: "16px" }}>
+                    {getEventIcon(event.type)}
+                  </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 500, color: "#1a1a1a", marginBottom: "4px" }}>
+                    <div
+                      style={{
+                        fontWeight: 500,
+                        color: "#1a1a1a",
+                        marginBottom: "4px",
+                      }}
+                    >
                       {event.type}
-                      {event.action && <span style={{ color: "#666", marginLeft: "4px" }}>({event.action})</span>}
+                      {event.action && (
+                        <span style={{ color: "#666", marginLeft: "4px" }}>
+                          ({event.action})
+                        </span>
+                      )}
                     </div>
                     {event.error && (
-                      <div style={{ color: "#dc3545", fontSize: "11px" }}>Error: {event.error}</div>
+                      <div style={{ color: "#dc3545", fontSize: "11px" }}>
+                        Error: {event.error}
+                      </div>
                     )}
                     {event.preview && (
-                      <div style={{ color: "#666", fontSize: "11px", marginTop: "4px" }}>
+                      <div
+                        style={{
+                          color: "#666",
+                          fontSize: "11px",
+                          marginTop: "4px",
+                        }}
+                      >
                         Preview: {event.preview}...
                       </div>
                     )}
                     {event.length && (
-                      <div style={{ color: "#666", fontSize: "11px", marginTop: "4px" }}>
+                      <div
+                        style={{
+                          color: "#666",
+                          fontSize: "11px",
+                          marginTop: "4px",
+                        }}
+                      >
                         Length: {event.length.toLocaleString()} chars
                       </div>
                     )}
-                    <div style={{ color: "#999", fontSize: "10px", marginTop: "4px" }}>
+                    <div
+                      style={{
+                        color: "#999",
+                        fontSize: "10px",
+                        marginTop: "4px",
+                      }}
+                    >
                       {new Date(event.at).toLocaleTimeString()}
                     </div>
                   </div>
