@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:ui": "cd apps/ui && next dev -p 3000",
+    "dev:ui": "cd apps/ui && pnpm run dev -p 3000",
     "dev:agent": "cd apps/agent && tsx src/index.ts",
     "dev:mcp": "cd packages/mcp-server && tsx src/server.ts",
     "build": "echo 'Use per-app build'",

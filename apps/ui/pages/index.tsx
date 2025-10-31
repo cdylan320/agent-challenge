@@ -96,6 +96,9 @@ export default function Home() {
             color: "#0f0",
             padding: 12,
             whiteSpace: "pre-wrap",
+            maxHeight: 400,
+            overflow: "auto",
+            wordBreak: "break-word",
           }}
         >
           {result}
