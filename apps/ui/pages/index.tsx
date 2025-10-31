@@ -54,6 +54,8 @@ export default function Home() {
     };
   }, []);
 
+  const [fetchedContent, setFetchedContent] = useState<string>("");
+
   async function callAgent(action: "fetch_url" | "summarize", input: any) {
     setLoading(true);
     setResult("");
@@ -66,6 +68,10 @@ export default function Home() {
       const json = await res.json();
       if (json.ok) {
         setResult(json.result);
+        // If fetching URL, save content for potential summarization
+        if (action === "fetch_url") {
+          setFetchedContent(json.result);
+        }
       } else {
         setResult(`❌ Error: ${json.error}`);
       }
@@ -75,6 +81,81 @@ export default function Home() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchAndSummarize() {
+    if (!url) return;
+    setLoading(true);
+    setResult("");
+    try {
+      // Step 1: Fetch URL
+      const fetchRes = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "fetch_url", input: { url } }),
+      });
+      const fetchJson = await fetchRes.json();
+      
+      if (!fetchJson.ok) {
+        setResult(`❌ Fetch Error: ${fetchJson.error}`);
+        setLoading(false);
+        return;
+      }
+
+      const htmlContent = fetchJson.result;
+      setResult(`📄 Fetched ${htmlContent.length} characters\n\n`);
+      setFetchedContent(htmlContent);
+
+      // Step 2: Summarize the fetched content
+      // Extract text from HTML (simple strip tags)
+      const textContent = htmlContent
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 5000); // Limit to first 5000 chars for summarization
+
+      const summarizeRes = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "summarize",
+          input: { text: textContent, max_tokens: 300 },
+        }),
+      });
+      const summarizeJson = await summarizeRes.json();
+
+      if (summarizeJson.ok) {
+        setResult(
+          `📄 Fetched ${htmlContent.length} characters\n\n✨ Summary:\n${summarizeJson.result}`
+        );
+        setText(textContent); // Auto-fill summarize textarea
+      } else {
+        setResult(
+          `📄 Fetched ${htmlContent.length} characters\n\n❌ Summarize Error: ${summarizeJson.error}`
+        );
+      }
+    } catch (e: any) {
+      setResult(
+        `❌ Network Error: ${e?.message || "Failed to process request"}`
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function useFetchedContent() {
+    if (fetchedContent) {
+      // Extract text from HTML for summarize
+      const textContent = fetchedContent
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      setText(textContent);
     }
   }
 
@@ -191,7 +272,7 @@ export default function Home() {
               }}
             >
               Retrieve and display the raw HTML/text content from any publicly
-              accessible URL.
+              accessible URL. You can then summarize the fetched content.
             </p>
           </div>
           <input
@@ -210,24 +291,44 @@ export default function Home() {
               boxSizing: "border-box",
             }}
           />
-          <button
-            onClick={() => callAgent("fetch_url", { url })}
-            disabled={loading || !url}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: loading ? "#ccc" : "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: loading || !url ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
-            }}
-          >
-            {loading ? "⏳ Processing..." : "🔍 Fetch URL"}
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={() => callAgent("fetch_url", { url })}
+              disabled={loading || !url}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: loading ? "#ccc" : "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: 500,
+                cursor: loading || !url ? "not-allowed" : "pointer",
+                transition: "background 0.2s",
+              }}
+            >
+              {loading ? "⏳ Processing..." : "🔍 Fetch Only"}
+            </button>
+            <button
+              onClick={fetchAndSummarize}
+              disabled={loading || !url}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: loading ? "#ccc" : "#6f42c1",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: 500,
+                cursor: loading || !url ? "not-allowed" : "pointer",
+                transition: "background 0.2s",
+              }}
+            >
+              {loading ? "⏳ Processing..." : "🚀 Fetch & Summarize"}
+            </button>
+          </div>
         </div>
 
         {/* Summarize Section */}
@@ -259,9 +360,29 @@ export default function Home() {
               }}
             >
               Use AI to generate a concise summary of any text using the Nosana
-              LLM endpoint.
+              LLM endpoint. Works standalone or with fetched URL content.
             </p>
           </div>
+          {fetchedContent && (
+            <button
+              onClick={useFetchedContent}
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginBottom: "12px",
+                background: "#e7f3ff",
+                color: "#0066cc",
+                border: "1px solid #b3d9ff",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              📋 Use fetched content from URL above
+            </button>
+          )}
           <textarea
             placeholder="Paste or type text to summarize here..."
             value={text}
