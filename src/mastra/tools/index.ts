@@ -104,3 +104,69 @@ function getWeatherCondition(code: number): string {
   };
   return conditions[code] || 'Unknown';
 }
+
+// Custom Tools for Agents 102 Challenge
+export const fetchUrlTool = createTool({
+  id: 'fetch-url',
+  description: 'Fetch and retrieve the raw HTML/text content from any publicly accessible URL',
+  inputSchema: z.object({
+    url: z.string().url().describe('The URL to fetch content from'),
+  }),
+  outputSchema: z.string(),
+  execute: async ({ context }) => {
+    const response = await fetch(context.url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${context.url}: ${response.status}`);
+    }
+    return await response.text();
+  },
+});
+
+export const summarizeTool = createTool({
+  id: 'summarize',
+  description: 'Use AI to generate a concise summary of any text using the Nosana LLM endpoint',
+  inputSchema: z.object({
+    text: z.string().min(1).describe('The text to summarize'),
+    max_tokens: z.number().min(64).max(2048).default(256).describe('Maximum tokens for the summary'),
+  }),
+  outputSchema: z.string(),
+  execute: async ({ context }) => {
+    const OLLAMA_API_URL = process.env.OLLAMA_API_URL || process.env.NOS_OLLAMA_API_URL || '';
+    const MODEL_NAME = process.env.MODEL_NAME_AT_ENDPOINT || process.env.NOS_MODEL_NAME_AT_ENDPOINT || 'Qwen3:8b';
+    
+    if (!OLLAMA_API_URL) {
+      throw new Error('OLLAMA_API_URL not set');
+    }
+
+    const body = {
+      model: MODEL_NAME,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a concise summarizer. Return a crisp summary.',
+        },
+        {
+          role: 'user',
+          content: `Summarize the following text:\n\n${context.text}`,
+        },
+      ],
+      stream: false,
+      max_tokens: context.max_tokens,
+    };
+
+    const res = await fetch(`${OLLAMA_API_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`LLM error: ${res.status} ${err}`);
+    }
+
+    const json = await res.json();
+    const content = json?.message?.content || json?.choices?.[0]?.message?.content || '';
+    return String(content).trim();
+  },
+});
