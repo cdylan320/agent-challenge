@@ -96,7 +96,7 @@ export default function Home() {
         body: JSON.stringify({ action: "fetch_url", input: { url } }),
       });
       const fetchJson = await fetchRes.json();
-      
+
       if (!fetchJson.ok) {
         setResult(`❌ Fetch Error: ${fetchJson.error}`);
         setLoading(false);
