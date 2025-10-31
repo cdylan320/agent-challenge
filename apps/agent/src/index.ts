@@ -16,6 +16,14 @@ app.use(express.json());
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || "";
 const MODEL_NAME = process.env.MODEL_NAME_AT_ENDPOINT || "Qwen3:8b";
 
+// Log env vars at startup (without exposing secrets)
+if (!OLLAMA_API_URL) {
+  console.warn("[agent] WARNING: OLLAMA_API_URL not set!");
+} else {
+  console.log(`[agent] OLLAMA_API_URL loaded (length: ${OLLAMA_API_URL.length})`);
+  console.log(`[agent] MODEL_NAME: ${MODEL_NAME}`);
+}
+
 // Simple in-memory SSE clients list
 const sseClients = new Set<import("express").Response>();
 
@@ -113,6 +121,7 @@ app.post("/agent/act", async (req, res) => {
       at: Date.now(),
       error: e?.message || "Internal error",
     });
+    console.error("[agent] Error in /agent/act:", e?.message || e);
     return res
       .status(500)
       .json({ ok: false, error: e?.message || "Internal error" });
