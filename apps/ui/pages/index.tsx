@@ -96,7 +96,7 @@ export default function Home() {
             color: "#0f0",
             padding: 12,
             whiteSpace: "pre-wrap",
-            maxHeight: 400,
+            maxHeight: 300,
             overflow: "auto",
             wordBreak: "break-word",
           }}

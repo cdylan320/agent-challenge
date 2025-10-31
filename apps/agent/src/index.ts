@@ -1,13 +1,20 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import fetch from "node-fetch";
 import { z } from "zod";
+
+// Load .env from repo root (ESM-compatible path resolution)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, "../../../.env") });
 
 const app = express();
 app.use(express.json());
 
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || "";
-const MODEL_NAME = process.env.MODEL_NAME_AT_ENDPOINT || "Qwen2.5:7b";
+const MODEL_NAME = process.env.MODEL_NAME_AT_ENDPOINT || "Qwen3:8b";
 
 // Simple in-memory SSE clients list
 const sseClients = new Set<import("express").Response>();
