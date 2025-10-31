@@ -3,6 +3,7 @@
 ## ✅ Completed Requirements
 
 ### 1. MCP Server ✅
+
 - **Location**: `packages/mcp-server/src/server.ts`
 - **Features**:
   - 2 custom tools: `add_note`, `summarize_note`
@@ -10,15 +11,17 @@
   - Integrated with Mastra framework
 
 ### 2. Mastra AI Agent ✅
+
 - **Location**: `src/mastra/agents/index.ts`
 - **Agent**: `webResearchAgent`
-- **Tools**: 
+- **Tools**:
   - `fetchUrlTool` - Fetch content from URLs
   - `summarizeTool` - Summarize text using Nosana LLM
 - **Framework**: Properly integrated with `@mastra/core`
 - **Memory**: LibSQL storage with working memory
 
 ### 3. Interactive Frontend ✅
+
 - **Two UI Options**:
   1. **Custom UI** (`apps/ui/pages/index.tsx`):
      - Modern, clean design
@@ -31,6 +34,7 @@
      - Real-time agent interaction
 
 ### 4. Live Synchronization ✅
+
 - **SSE Implementation**: `apps/agent/src/index.ts`
 - **Features**:
   - Real-time event streaming
@@ -39,6 +43,7 @@
   - UI event visualization with icons
 
 ### 5. Architecture & Deployment ✅
+
 - **Monorepo Structure**: Proper workspace organization
 - **Docker**: `Dockerfile` ready for containerization
 - **Nosana Job Definition**: Multiple job definitions included
@@ -72,18 +77,21 @@
 
 ## 📐 Architecture Decisions
 
-1. **Dual Agent Approach**: 
+1. **Dual Agent Approach**:
+
    - Express agent (`apps/agent`) for simple API-based interaction
    - Mastra agent (`src/mastra`) for framework-compliant implementation
 
-2. **SSE for Live Sync**: 
+2. **SSE for Live Sync**:
+
    - Server-Sent Events for real-time updates
    - Heartbeat mechanism for connection health
 
-3. **MCP Server**: 
+3. **MCP Server**:
+
    - Separate package for modularity
    - Integrated with Mastra framework
 
-4. **UI Options**: 
+4. **UI Options**:
    - Custom UI for maximum control
    - CopilotKit UI for framework integration demo
